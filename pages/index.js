@@ -35,7 +35,7 @@ export default function Home() {
         <div className={styles.container}>
             <Head>
                 <title>Convert To MP4</title>
-                <link rel="icon" href="/favicon.ico" />
+                <link rel="icon" href="/convert-to-mp4.ico" />
                 <meta
                     name="Description"
                     content="Convert To MP4. Convert any video file format to MP4 format (MPEG-4)."
@@ -43,12 +43,13 @@ export default function Home() {
             </Head>
 
             <main className={styles.main}>
+              <img src="/convert-to-mp4.png" height="120px" style={{ marginBottom: '20px'}}/>
                 <h1 className={styles.title}>Convert To MP4</h1>
 
                 <p className={styles.description}>
-                    Convert any video file format to MP4 format (MPEG-4)
+                    Convert any video file format to MP4 format (MPEG-4)<br/>
+                    Just in three steps!<br/>
                 </p>
-
                 <div className={styles.grid}>
                     {ratio === 0 ? (
                         <a
@@ -87,17 +88,13 @@ export default function Home() {
                                 .join(".")}.mp4`}
                             className={styles.card}
                         >
-                            <div
-                                style={{
-                                    width: `${ratio * 100}%`,
-                                    backgroundColor: "purple",
-                                }}
-                            ></div>
                             <h3>Download</h3>
                         </a>
                     ) : (
                         <a className={styles.card}>
-                            <h3>{`${(ratio * 100).toFixed(2)}%`}</h3>
+                            <h3 style={{ textAlign: "center" }}>{`${(
+                                ratio * 100
+                            ).toFixed(2)}%`}</h3>
                         </a>
                     )}
                 </div>
@@ -105,18 +102,20 @@ export default function Home() {
             </main>
 
             <footer className={styles.footer}>
-                Made with{" "}
-                <img
-                    src="/iconmonstr-heart-thin.svg"
-                    alt="Heart Icon"
-                    className={styles.logo}
-                />{" "}
-                for you
                 <a
-                    href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+                    href="https://www.buymeacoffee.com/amilasenadheera"
                     target="_blank"
                     rel="noopener noreferrer"
-                ></a>
+                >
+                    Hey, Buy me a coffee
+                    <div style={{ textAlign: "right" }}>
+                        <img
+                            src="https://img.buymeacoffee.com/api/?name=amilasenadheera&size=300&bg-image=bmc&background=BD5FFF"
+                            height="30px"
+                        />
+                    </div>{" "}
+                    !
+                </a>
             </footer>
         </div>
     );
