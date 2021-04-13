@@ -1,65 +1,123 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from "next/head";
+import React, { useState } from "react";
+import styles from "../styles/Home.module.css";
+import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
 
 export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    const [videoSrc, setVideoSrc] = useState("");
+    const [message, setMessage] = useState("Upload your video file");
+    const [fileName, setFileName] = useState("");
+    const ffmpeg = createFFmpeg({
+        log: true,
+    });
+    const [file, setFile] = useState(null);
+    const [ratio, setRatio] = useState(0);
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
+    const doTranscode = async () => {
+        setRatio(0);
+        setMessage("Loading converter resources...");
+        await ffmpeg.load();
+        setMessage("Converting...");
+        await ffmpeg.setProgress(({ ratio }) => {
+            setRatio(ratio);
+            console.log(ratio);
+        });
+        ffmpeg.FS("writeFile", "test", await fetchFile(file));
+        setFileName(file.name);
+        await ffmpeg.run("-i", "test", "test.mp4");
+        setMessage("Convertion has completed");
+        const data = ffmpeg.FS("readFile", "test.mp4");
+        setVideoSrc(
+            URL.createObjectURL(new Blob([data.buffer], { type: "video/mp4" }))
+        );
+    };
+    return (
+        <div className={styles.container}>
+            <Head>
+                <title>Convert To MP4</title>
+                <link rel="icon" href="/favicon.ico" />
+                <meta
+                    name="Description"
+                    content="Convert To MP4. Convert any video file format to MP4 format (MPEG-4)."
+                />
+            </Head>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+            <main className={styles.main}>
+                <h1 className={styles.title}>Convert To MP4</h1>
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+                <p className={styles.description}>
+                    Convert any video file format to MP4 format (MPEG-4)
+                </p>
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
+                <div className={styles.grid}>
+                    {ratio === 0 ? (
+                        <a
+                            onClick={() => {
+                                if (!file) {
+                                    document.getElementById("upload").click();
+                                } else {
+                                    doTranscode();
+                                }
+                            }}
+                            className={styles.card}
+                        >
+                            <input
+                                type="file"
+                                onChange={(e) => {
+                                    setFile(e.target.files[0]);
+                                }}
+                                id="upload"
+                                hidden
+                            />
+                            <h3>{!file ? "Upload" : `Convert`}</h3>
+                        </a>
+                    ) : ratio === 1 ? (
+                        <a
+                            onClick={() => {
+                                setTimeout(() => {
+                                    setFile(null);
+                                    setRatio(0);
+                                    setMessage("Upload your video file"), 1000;
+                                });
+                            }}
+                            href={`${videoSrc}`}
+                            download={`${fileName
+                                .split(".")
+                                .slice(0, -1)
+                                .join(".")}.mp4`}
+                            className={styles.card}
+                        >
+                            <div
+                                style={{
+                                    width: `${ratio * 100}%`,
+                                    backgroundColor: "purple",
+                                }}
+                            ></div>
+                            <h3>Download</h3>
+                        </a>
+                    ) : (
+                        <a className={styles.card}>
+                            <h3>{`${(ratio * 100).toFixed(2)}%`}</h3>
+                        </a>
+                    )}
+                </div>
+                <p>{message}</p>
+            </main>
 
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+            <footer className={styles.footer}>
+                Made with{" "}
+                <img
+                    src="/iconmonstr-heart-thin.svg"
+                    alt="Heart Icon"
+                    className={styles.logo}
+                />{" "}
+                for you
+                <a
+                    href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                ></a>
+            </footer>
         </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+    );
 }
